@@ -28,17 +28,19 @@ git commit -m "$commit_message"
 git push --force origin "$INPUT_BRANCH"
 
 # Create PR if one isn't already open for this branch
-pr_state=$(gh pr view "$INPUT_BRANCH" --json state --jq '.state' 2>/dev/null || echo "")
-if [ "$pr_state" != "OPEN" ]; then
-  gh pr create \
-    --base "$base" \
-    --head "$INPUT_BRANCH" \
-    --title "$INPUT_TITLE" \
-    --body "$INPUT_BODY"
+pr_number=$(gh pr list --head "$INPUT_BRANCH" --state open --json number --jq '.[0].number // empty' 2>/dev/null || echo "")
+if [ -z "$pr_number" ]; then
+  pr_url=$(gh api "repos/${GITHUB_REPOSITORY}/pulls" \
+    --method POST \
+    -f title="$INPUT_TITLE" \
+    -f body="$INPUT_BODY" \
+    -f head="$INPUT_BRANCH" \
+    -f base="$base" \
+    --jq '.html_url')
+  pr_number=$(gh pr view "$INPUT_BRANCH" --json number --jq '.number')
 fi
 
 # Set outputs (works whether PR was just created or already existed)
-pr_url=$(gh pr view "$INPUT_BRANCH" --json url --jq '.url')
-pr_number=$(gh pr view "$INPUT_BRANCH" --json number --jq '.number')
+pr_url="${pr_url:-$(gh pr view "$INPUT_BRANCH" --json url --jq '.url')}"
 echo "pull-request-url=${pr_url}" >> "$GITHUB_OUTPUT"
 echo "pull-request-number=${pr_number}" >> "$GITHUB_OUTPUT"
