@@ -1,0 +1,47 @@
+name: Create Pull Request
+description: Create a pull request from workspace changes using git and gh
+
+inputs:
+  branch:
+    description: Branch name for the pull request
+    required: true
+  title:
+    description: Pull request title
+    required: true
+  commit-message:
+    description: Commit message (defaults to title)
+    required: false
+  body:
+    description: Pull request body
+    required: false
+    default: ""
+  add:
+    description: File patterns to stage, space-separated (passed to git add)
+    required: false
+    default: "."
+  base:
+    description: Base branch for the pull request (defaults to the checked-out branch)
+    required: false
+
+outputs:
+  pull-request-number:
+    description: Number of the pull request (empty if no changes)
+    value: ${{ steps.run.outputs.pull-request-number }}
+  pull-request-url:
+    description: URL of the pull request (empty if no changes)
+    value: ${{ steps.run.outputs.pull-request-url }}
+
+runs:
+  using: composite
+  steps:
+    - name: Create pull request
+      id: run
+      shell: bash
+      env:
+        INPUT_BRANCH: ${{ inputs.branch }}
+        INPUT_TITLE: ${{ inputs.title }}
+        INPUT_COMMIT_MESSAGE: ${{ inputs.commit-message || inputs.title }}
+        INPUT_BODY: ${{ inputs.body }}
+        INPUT_ADD: ${{ inputs.add }}
+        INPUT_BASE: ${{ inputs.base }}
+      run: ${{ github.action_path }}/create-pull-request.sh
