@@ -1,6 +1,6 @@
 # actions
 
-Reusable GitHub Actions for [felipeelias](https://github.com/felipeelias) repositories.
+Reusable GitHub Actions.
 
 ## Actions
 
