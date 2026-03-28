@@ -27,6 +27,9 @@ git checkout -B "$INPUT_BRANCH"
 git commit -m "$commit_message"
 git push --force origin "$INPUT_BRANCH"
 
+# Debug: show what token gh is using
+gh auth status 2>&1 || true
+
 # Create PR if one isn't already open for this branch
 pr_number=$(gh pr list --head "$INPUT_BRANCH" --state open --json number --jq '.[0].number // empty' 2>/dev/null || echo "")
 if [ -z "$pr_number" ]; then
